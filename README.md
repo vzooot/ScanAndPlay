@@ -21,5 +21,5 @@ It visually displays brackets, tracks match results, and handles leaderboards â€
 Clone the project:
 
 ```bash
-git clone https://github.com/your-username/SveaBrackets-Android.git
+git clone https://github.com/vzooot/ScanAndPlay.git
 cd SveaBrackets-Android

@@ -33,11 +33,20 @@ fun MatchView(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(4.dp)
         ) {
-            MatchButton(match, match.opponent1, onSelectWinner)
-            MatchButton(match, match.opponent2, onSelectWinner)
+            MatchButton(
+                match = match,
+                participant = match.opponent1,
+                onSelect = onSelectWinner
+            )
+            MatchButton(
+                match = match,
+                participant = match.opponent2,
+                onSelect = onSelectWinner
+            )
         }
     }
 }
+
 
 @Composable
 private fun MatchButton(
@@ -45,14 +54,23 @@ private fun MatchButton(
     participant: Participant?,
     onSelect: (Participant) -> Unit
 ) {
-    val isClickable = participant != null &&
+    val matchHasWinner = match.winner != null
+    val isParticipantWinner = match.winner == participant
+    val isActiveMatch = !matchHasWinner &&
             match.opponent1 != null &&
-            match.opponent2 != null &&
-            match.winner == null
+            match.opponent2 != null
 
-    val background = when {
-        match.winner == participant -> Color(0xFFB2DFDB) // Highlight winner
-        else -> Color(0xFFE0E0E0)
+    val isClickable = participant != null && isActiveMatch
+
+    val backgroundColor = when {
+        isParticipantWinner -> Color(0xFFA5D6A7) // ✅ Green
+        else -> Color(0xFFE0E0E0) // ⬜ Gray for all others
+    }
+
+    val textColor = when {
+        participant == null -> Color.Black // TBD
+        isActiveMatch -> Color(0xFF1976D2) // 🔵 Blue for active
+        else -> Color.Black // Locked = black
     }
 
     Box(
@@ -60,13 +78,18 @@ private fun MatchButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(28.dp)
-            .background(background, RoundedCornerShape(6.dp))
-            .clickable(enabled = isClickable) { participant?.let(onSelect) }
+            .background(backgroundColor, RoundedCornerShape(6.dp))
+            .clickable(enabled = isClickable) {
+                participant?.let(onSelect)
+            }
     ) {
         Text(
             text = participant?.name ?: "TBD",
             style = MaterialTheme.typography.labelSmall,
-            color = Color.Black
+            color = textColor
         )
     }
 }
+
+
+

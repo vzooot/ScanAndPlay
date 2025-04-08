@@ -1,5 +1,6 @@
 package com.example.scanandplay.logic
 
+import androidx.compose.runtime.mutableStateListOf
 import com.example.scanandplay.model.*
 import com.example.scanandplay.repository.LeaderboardManager
 import com.example.scanandplay.repository.TournamentHistoryManager
@@ -10,8 +11,83 @@ class BracketsManager {
     var stage: Stage? = null
         private set
 
-    fun resetTournament() {
-        stage = null
+    fun create16PlayerDoubleElimination(name: String, participants: List<Participant>) {
+        val matches = mutableListOf<Match>()
+
+        // --- Winner Bracket ---
+
+        // Round 1: 8 matches
+        val w1 = List(8) { i ->
+            Match(
+                round = 1, number = i + 1, bracket = "W",
+                opponent1 = participants[i * 2],
+                opponent2 = participants[i * 2 + 1]
+            )
+        }
+
+        // Round 2: 4 matches
+        val w2 = List(4) { i -> Match(round = 2, number = i + 1, bracket = "W") }
+
+        // Round 3: 2 matches
+        val w3 = List(2) { i -> Match(round = 3, number = i + 1, bracket = "W") }
+
+        // Round 4: 1 match (Winner Final)
+        val wFinal = Match(round = 4, number = 1, bracket = "W")
+
+        // --- Loser Bracket ---
+        val l1 = List(4) { Match(round = 1, number = it + 1, bracket = "L") }
+        val l2 = List(4) { Match(round = 2, number = it + 1, bracket = "L") }
+        val l3 = List(2) { Match(round = 3, number = it + 1, bracket = "L") }
+        val l4 = Match(round = 4, number = 1, bracket = "L")
+
+        // --- Grand Final ---
+        val gf = Match(round = 1, number = 1, bracket = "G")
+
+        // --- Winner Routing ---
+        w1.forEachIndexed { i, match ->
+            match.nextMatchForWinner = w2[i / 2].id
+            match.nextMatchForLoser = l1[i / 2].id
+        }
+
+        w2.forEachIndexed { i, match ->
+            match.nextMatchForWinner = w3[i / 2].id
+            match.nextMatchForLoser = l2[i].id
+        }
+
+        w3.forEachIndexed { i, match ->
+            match.nextMatchForWinner = wFinal.id
+            match.nextMatchForLoser = l3[i].id
+        }
+
+        wFinal.nextMatchForWinner = gf.id
+        wFinal.nextMatchForLoser = l4.id
+
+        // --- Loser Routing ---
+        l1.forEachIndexed { i, match ->
+            match.nextMatchForWinner = l2[i].id
+        }
+
+        l2.forEachIndexed { i, match ->
+            match.nextMatchForWinner = l3[i / 2].id
+        }
+
+        l3.forEachIndexed { i, match ->
+            match.nextMatchForWinner = l4.id
+        }
+
+        l4.nextMatchForWinner = gf.id
+
+        // --- All Matches ---
+        matches.addAll(w1 + w2 + w3 + listOf(wFinal))
+        matches.addAll(l1 + l2 + l3 + listOf(l4))
+        matches.add(gf)
+
+        // --- Create Stage ---
+        stage = Stage(
+            name = name,
+            type = StageType.DoubleElimination,
+            matches = mutableStateListOf<Match>().apply { addAll(matches) }
+        )
     }
 
     fun create8PlayerDoubleElimination(name: String, participants: List<Participant>) {
@@ -73,7 +149,11 @@ class BracketsManager {
         matches.addAll(l1 + l2 + listOf(l3))
         matches.add(gf)
 
-        stage = Stage(id = UUID.randomUUID(), name = name, type = StageType.DoubleElimination, matches = matches.toMutableList())
+        stage = Stage(
+            name = name,
+            type = StageType.DoubleElimination,
+            matches = mutableStateListOf<Match>().apply { addAll(matches) }
+        )
     }
 
     fun reportMatchResult(matchId: UUID, winner: Participant) {
@@ -92,12 +172,14 @@ class BracketsManager {
             val nextIndex = currentStage.matches.indexOfFirst { it.id == toId }
             if (nextIndex != -1 && participant != null) {
                 val next = currentStage.matches[nextIndex]
-                if (next.opponent1 == null) {
-                    next.opponent1 = participant
-                } else {
-                    next.opponent2 = participant
+
+                val updated = when {
+                    next.opponent1 == null -> next.copy(opponent1 = participant)
+                    next.opponent2 == null -> next.copy(opponent2 = participant)
+                    else -> next
                 }
-                currentStage.matches[nextIndex] = next
+
+                currentStage.matches[nextIndex] = updated
             }
         }
 
@@ -138,23 +220,5 @@ class BracketsManager {
         }
 
         TournamentHistoryManager.get().saveTournament(currentStage)
-    }
-
-    fun addGrandFinalIfNeeded() {
-        val currentStage = stage ?: return
-        if (currentStage.matches.any { it.bracket == "G" }) return
-
-        val winnerFinal = currentStage.matches.lastOrNull { it.bracket == "W" && it.winner != null } ?: return
-        val loserFinal = currentStage.matches.lastOrNull { it.bracket == "L" && it.winner != null } ?: return
-
-        val grandFinal = Match(
-            round = 1,
-            number = 1,
-            bracket = "G",
-            opponent1 = winnerFinal.winner,
-            opponent2 = loserFinal.winner
-        )
-        currentStage.matches.add(grandFinal)
-        stage = currentStage
     }
 }

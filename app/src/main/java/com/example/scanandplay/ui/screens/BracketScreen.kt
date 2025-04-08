@@ -2,6 +2,8 @@ package com.example.scanandplay.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,11 +28,18 @@ fun BracketScreen(
     var selectedWinner by remember { mutableStateOf<Participant?>(null) }
     var confirmPopupVisible by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
         Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
             Column {
                 Text("🏆 Winner Bracket", style = MaterialTheme.typography.titleSmall)
-                BracketRounds(matches = manager.stage?.matches?.filter { it.bracket == "W" } ?: emptyList()) { match, winner ->
+                BracketRounds(
+                    matches = manager.stage?.matches?.filter { it.bracket == "W" } ?: emptyList()
+                ) { match, winner ->
                     selectedMatch = match
                     selectedWinner = winner
                     confirmPopupVisible = true
@@ -39,7 +48,9 @@ fun BracketScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text("💀 Loser Bracket", style = MaterialTheme.typography.titleSmall)
-                BracketRounds(matches = manager.stage?.matches?.filter { it.bracket == "L" } ?: emptyList()) { match, winner ->
+                BracketRounds(
+                    matches = manager.stage?.matches?.filter { it.bracket == "L" } ?: emptyList()
+                ) { match, winner ->
                     selectedMatch = match
                     selectedWinner = winner
                     confirmPopupVisible = true
@@ -57,30 +68,30 @@ fun BracketScreen(
                 }
             }
         }
+    }
 
-        if (showWinnerPopup && tournamentWinner != null) {
-            WinnerPopup(winner = tournamentWinner!!, onClose = {
-                manager.finalizeTournament(leaderboard)
-                onClose()
-            })
-        }
+    if (showWinnerPopup && tournamentWinner != null) {
+        WinnerPopup(winner = tournamentWinner!!, onClose = {
+            manager.finalizeTournament(leaderboard)
+            onClose()
+        })
+    }
 
-        if (confirmPopupVisible && selectedMatch != null && selectedWinner != null) {
-            ConfirmWinnerDialog(
-                participant = selectedWinner!!,
-                onConfirm = {
-                    manager.reportMatchResult(selectedMatch!!.id, selectedWinner!!)
-                    if (selectedMatch!!.bracket == "G") {
-                        tournamentWinner = selectedWinner
-                        showWinnerPopup = true
-                    }
-                    confirmPopupVisible = false
-                },
-                onCancel = {
-                    confirmPopupVisible = false
+    if (confirmPopupVisible && selectedMatch != null && selectedWinner != null) {
+        ConfirmWinnerDialog(
+            participant = selectedWinner!!,
+            onConfirm = {
+                manager.reportMatchResult(selectedMatch!!.id, selectedWinner!!)
+                if (selectedMatch!!.bracket == "G") {
+                    tournamentWinner = selectedWinner
+                    showWinnerPopup = true
                 }
-            )
-        }
+                confirmPopupVisible = false
+            },
+            onCancel = {
+                confirmPopupVisible = false
+            }
+        )
     }
 }
 

@@ -19,13 +19,16 @@ import com.example.scanandplay.repository.PlayerRegistry
 import com.example.scanandplay.ui.components.MatchView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import com.example.scanandplay.model.LeaderboardEntry
+import com.example.scanandplay.viewmodel.ContentViewModel
 
 
 @Composable
 fun HomeScreen(
     playerLimit: Int,
     navController: NavHostController,
-    leaderboard: List<com.example.scanandplay.model.LeaderboardEntry>
+    leaderboard: List<LeaderboardEntry>,
+    viewModel: ContentViewModel // 👈 add this if missing
 ) {
     val registry = remember { PlayerRegistry.instance }
     val manager = remember { BracketsManager() }
@@ -35,10 +38,15 @@ fun HomeScreen(
     var showBracket by remember { mutableStateOf(false) }
 
     if (showBracket) {
-        BracketScreen(manager = manager, leaderboard = LeaderboardManager.instance) {
-            showBracket = false
-            navController.popBackStack()
-        }
+        BracketScreen(
+            manager = manager,
+            leaderboard = LeaderboardManager.instance,
+            viewModel = viewModel, // 👈 pass it here
+            onClose = {
+                showBracket = false
+                navController.popBackStack()
+            }
+        )
         return
     }
 
@@ -65,7 +73,7 @@ fun HomeScreen(
             Button(
                 onClick = {
                     val ordered = selectedPlayers.take(playerLimit)
-                    if (ordered.size == 8) {
+                    if (playerLimit == 8) {
                         manager.create8PlayerDoubleElimination("Tournament", ordered)
                     } else {
                         manager.create16PlayerDoubleElimination("Tournament", ordered)
@@ -76,6 +84,7 @@ fun HomeScreen(
             ) {
                 Text("🎯 Start Tournament")
             }
+
 
 
 //            Button(

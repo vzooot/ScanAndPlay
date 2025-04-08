@@ -20,11 +20,13 @@ import com.example.scanandplay.logic.BracketsManager
 import com.example.scanandplay.model.Participant
 import com.example.scanandplay.repository.LeaderboardManager
 import com.example.scanandplay.repository.PlayerRegistry
+import com.example.scanandplay.viewmodel.ContentViewModel
 
 @Composable
 fun PlayerSelectionScreen(
     playerLimit: Int,
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: ContentViewModel // ✅ Add this
 ) {
     val registry = PlayerRegistry.instance
     val manager = remember { BracketsManager() }
@@ -34,10 +36,15 @@ fun PlayerSelectionScreen(
     var showBracket by remember { mutableStateOf(false) }
 
     if (showBracket) {
-        BracketScreen(manager = manager, leaderboard = LeaderboardManager.instance) {
-            showBracket = false
-            navController.popBackStack()
-        }
+        BracketScreen(
+            manager = manager,
+            leaderboard = LeaderboardManager.instance,
+            viewModel = viewModel, // ✅ Pass it
+            onClose = {
+                showBracket = false
+                navController.popBackStack()
+            }
+        )
         return
     }
 
@@ -87,11 +94,11 @@ fun PlayerSelectionScreen(
 
             Button(
                 onClick = {
-                    val shuffled = selectedPlayers.shuffled().take(playerLimit)
-                    if (shuffled.size == 8) {
-                        manager.create8PlayerDoubleElimination("Tournament", shuffled)
-                    } else if (shuffled.size == 16) {
-                        manager.create16PlayerDoubleElimination("Tournament", shuffled)
+                    val ordered = selectedPlayers.take(playerLimit)
+                    if (playerLimit == 8) {
+                        manager.create8PlayerDoubleElimination("Tournament", ordered)
+                    } else if (playerLimit == 16) {
+                        manager.create16PlayerDoubleElimination("Tournament", ordered)
                     }
                     showBracket = true
                 },
@@ -99,6 +106,22 @@ fun PlayerSelectionScreen(
             ) {
                 Text("🎯 Start Tournament")
             }
+
+
+//            Button(
+//                onClick = {
+//                    val shuffled = selectedPlayers.shuffled().take(playerLimit)
+//                    if (shuffled.size == 8) {
+//                        manager.create8PlayerDoubleElimination("Tournament", shuffled)
+//                    } else if (shuffled.size == 16) {
+//                        manager.create16PlayerDoubleElimination("Tournament", shuffled)
+//                    }
+//                    showBracket = true
+//                },
+//                enabled = selectedPlayers.size == playerLimit
+//            ) {
+//                Text("🎯 Start Tournament")
+//            }
         }
 
         // RIGHT: All Registered Players + Add Field

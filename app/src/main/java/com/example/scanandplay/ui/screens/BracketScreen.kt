@@ -15,13 +15,17 @@ import com.example.scanandplay.model.Match
 import com.example.scanandplay.model.Participant
 import com.example.scanandplay.repository.LeaderboardManager
 import com.example.scanandplay.ui.components.MatchView
+import com.example.scanandplay.viewmodel.ContentViewModel
 
 @Composable
 fun BracketScreen(
     manager: BracketsManager,
     leaderboard: LeaderboardManager,
+    viewModel: ContentViewModel, // 👈 add this
     onClose: () -> Unit
 ) {
+
+
     var showWinnerPopup by remember { mutableStateOf(false) }
     var tournamentWinner by remember { mutableStateOf<Participant?>(null) }
     var selectedMatch by remember { mutableStateOf<Match?>(null) }
@@ -71,10 +75,14 @@ fun BracketScreen(
     }
 
     if (showWinnerPopup && tournamentWinner != null) {
-        WinnerPopup(winner = tournamentWinner!!, onClose = {
-            manager.finalizeTournament(leaderboard)
-            onClose()
-        })
+        WinnerPopup(
+            winner = tournamentWinner!!,
+            onClose = {
+                manager.finalizeTournament(leaderboard)
+                viewModel.refreshLeaderboard() // 👈 use the injected viewModel here
+                onClose()
+            }
+        )
     }
 
     if (confirmPopupVisible && selectedMatch != null && selectedWinner != null) {

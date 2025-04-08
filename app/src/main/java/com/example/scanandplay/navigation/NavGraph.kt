@@ -18,10 +18,15 @@ fun NavGraph(
             ContentScreen(viewModel, navController)
         }
 
-        composable("${Routes.PlayerSelection}/{playerCount}") { backStackEntry ->
+        composable("player_selection/{playerCount}") { backStackEntry ->
             val count = backStackEntry.arguments?.getString("playerCount")?.toIntOrNull() ?: 8
-            PlayerSelectionScreen(playerLimit = count, navController = navController)
+            PlayerSelectionScreen(
+                playerLimit = count,
+                navController = navController,
+                viewModel = viewModel
+            )
         }
+
 
         composable(Routes.History) {
             TournamentHistoryScreen()

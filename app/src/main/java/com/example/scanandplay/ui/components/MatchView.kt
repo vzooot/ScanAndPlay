@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,20 +33,11 @@ fun MatchView(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(4.dp)
         ) {
-            MatchButton(
-                match = match,
-                participant = match.opponent1,
-                onSelect = onSelectWinner
-            )
-            MatchButton(
-                match = match,
-                participant = match.opponent2,
-                onSelect = onSelectWinner
-            )
+            MatchButton(match = match, participant = match.opponent1, onSelect = onSelectWinner)
+            MatchButton(match = match, participant = match.opponent2, onSelect = onSelectWinner)
         }
     }
 }
-
 
 @Composable
 private fun MatchButton(
@@ -55,22 +46,20 @@ private fun MatchButton(
     onSelect: (Participant) -> Unit
 ) {
     val matchHasWinner = match.winner != null
-    val isParticipantWinner = match.winner == participant
-    val isActiveMatch = !matchHasWinner &&
-            match.opponent1 != null &&
-            match.opponent2 != null
-
+    val isParticipantWinner = participant != null && match.winner == participant
+    val isActiveMatch = !matchHasWinner && match.opponent1 != null && match.opponent2 != null
     val isClickable = participant != null && isActiveMatch
 
     val backgroundColor = when {
-        isParticipantWinner -> Color(0xFFA5D6A7) // ✅ Green
-        else -> Color(0xFFE0E0E0) // ⬜ Gray for all others
+        participant == null -> Color(0xFFFAFAFA)       // 🩶 Very light gray for TBD
+        isParticipantWinner -> Color(0xFFA5D6A7)       // ✅ Green for selected winner
+        else -> Color(0xFFF0F0F0)                      // 🔘 Light gray for named slots
     }
 
     val textColor = when {
-        participant == null -> Color.Black // TBD
-        isActiveMatch -> Color(0xFF1976D2) // 🔵 Blue for active
-        else -> Color.Black // Locked = black
+        participant == null -> Color.Black             // Black for TBD
+        isActiveMatch -> Color(0xFF1976D2)             // Blue for active
+        else -> Color.Black
     }
 
     Box(
@@ -90,6 +79,3 @@ private fun MatchButton(
         )
     }
 }
-
-
-

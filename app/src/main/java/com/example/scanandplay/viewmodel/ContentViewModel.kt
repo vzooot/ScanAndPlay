@@ -22,9 +22,12 @@ class ContentViewModel : ViewModel() {
     var pendingAction: AdminAction? = null
     var shakeTrigger by mutableStateOf(0f)
 
+    fun refreshLeaderboard() {
+        leaderboard = LeaderboardManager.instance.leaderboard
+    }
+
     fun selectPlayerCount(count: Int, navController: NavHostController) {
-        val wrapper = PlayerCountWrapper(count)
-        navController.navigate("${Routes.Home}/${wrapper.count}")
+        navController.navigate("${Routes.PlayerSelection}/$count")
     }
 
     fun showHistory(navController: NavHostController) {

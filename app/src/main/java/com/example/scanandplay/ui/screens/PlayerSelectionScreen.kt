@@ -3,11 +3,15 @@ package com.example.scanandplay.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -16,21 +20,15 @@ import com.example.scanandplay.logic.BracketsManager
 import com.example.scanandplay.model.Participant
 import com.example.scanandplay.repository.LeaderboardManager
 import com.example.scanandplay.repository.PlayerRegistry
-import com.example.scanandplay.ui.components.MatchView
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import com.example.scanandplay.model.LeaderboardEntry
 import com.example.scanandplay.viewmodel.ContentViewModel
 
-
 @Composable
-fun HomeScreen(
+fun PlayerSelectionScreen(
     playerLimit: Int,
     navController: NavHostController,
-    leaderboard: List<LeaderboardEntry>,
-    viewModel: ContentViewModel // 👈 add this if missing
+    viewModel: ContentViewModel // ✅ Add this
 ) {
-    val registry = remember { PlayerRegistry.instance }
+    val registry = PlayerRegistry.instance
     val manager = remember { BracketsManager() }
 
     var selectedPlayers by remember { mutableStateOf<List<Participant>>(emptyList()) }
@@ -41,7 +39,7 @@ fun HomeScreen(
         BracketScreen(
             manager = manager,
             leaderboard = LeaderboardManager.instance,
-            viewModel = viewModel, // 👈 pass it here
+            viewModel = viewModel, // ✅ Pass it
             onClose = {
                 showBracket = false
                 navController.popBackStack()
@@ -50,20 +48,44 @@ fun HomeScreen(
         return
     }
 
-    Row(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // LEFT: Selected Players + Start Button
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Text("New Tournament", style = MaterialTheme.typography.titleLarge)
             Text("Select up to $playerLimit players", color = Color.Gray)
 
-            Text("Selected Players (${selectedPlayers.size}/$playerLimit)", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Selected Players (${selectedPlayers.size}/$playerLimit)",
+                style = MaterialTheme.typography.titleSmall
+            )
 
-            selectedPlayers.forEach { player ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(player.name)
-                    TextButton(onClick = {
-                        selectedPlayers = selectedPlayers - player
-                    }) {
-                        Text("Remove", color = Color.Red)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                items(selectedPlayers) { player ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(player.name)
+                        TextButton(onClick = {
+                            selectedPlayers = selectedPlayers - player
+                        }) {
+                            Text("Remove", color = Color.Red)
+                        }
                     }
                 }
             }
@@ -75,7 +97,7 @@ fun HomeScreen(
                     val ordered = selectedPlayers.take(playerLimit)
                     if (playerLimit == 8) {
                         manager.create8PlayerDoubleElimination("Tournament", ordered)
-                    } else {
+                    } else if (playerLimit == 16) {
                         manager.create16PlayerDoubleElimination("Tournament", ordered)
                     }
                     showBracket = true
@@ -86,15 +108,13 @@ fun HomeScreen(
             }
 
 
-
 //            Button(
 //                onClick = {
 //                    val shuffled = selectedPlayers.shuffled().take(playerLimit)
 //                    if (shuffled.size == 8) {
 //                        manager.create8PlayerDoubleElimination("Tournament", shuffled)
-//                    } else {
-//                        // Placeholder for 16-player logic
-//                        manager.create8PlayerDoubleElimination("Tournament", shuffled)
+//                    } else if (shuffled.size == 16) {
+//                        manager.create16PlayerDoubleElimination("Tournament", shuffled)
 //                    }
 //                    showBracket = true
 //                },
@@ -104,6 +124,7 @@ fun HomeScreen(
 //            }
         }
 
+        // RIGHT: All Registered Players + Add Field
         Column(modifier = Modifier.width(280.dp)) {
             Text("All Registered Players", style = MaterialTheme.typography.titleSmall)
 
@@ -139,11 +160,17 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn(modifier = Modifier.fillMaxWidth().background(Color(0xFFF9F9F9)).padding(8.dp)) {
-                items(registry.registeredPlayers.size) { index ->
-                    val player = registry.registeredPlayers[index]
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF9F9F9))
+                    .padding(8.dp)
+            ) {
+                items(registry.registeredPlayers) { player ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         TextButton(onClick = {
@@ -158,7 +185,11 @@ fun HomeScreen(
                             registry.unregister(player)
                             selectedPlayers = selectedPlayers - player
                         }) {
-                            Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.Red)
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Remove",
+                                tint = Color.Red
+                            )
                         }
                     }
                 }

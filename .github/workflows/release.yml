@@ -46,8 +46,10 @@ jobs:
 
       - name: Create Git tag from PR number
         run: |
-          git tag "pr-${{ env.PR_NUMBER }}"
-          git push origin "pr-${{ env.PR_NUMBER }}"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag pr-${{ env.PR_NUMBER }}
+          git push origin pr-${{ env.PR_NUMBER }}
 
       - name: Create GitHub Release
         id: create_release
@@ -62,7 +64,9 @@ jobs:
       - name: Upload APK to GitHub Release
         uses: phuonghuynh/action-ghrelease@v1.1.0
         with:
+          tag_name: pr-${{ env.PR_NUMBER }}
           files: app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
           

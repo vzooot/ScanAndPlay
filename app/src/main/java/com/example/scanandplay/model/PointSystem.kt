@@ -7,5 +7,6 @@ data class PointSystem(
     val fourth: Int = 0,
     val rest: Int = 0,
     val win: Int = 10,
-    val participation: Int = 10
+    val participation: Int = 10,
+    val quarterFinal: Int = 0
 )

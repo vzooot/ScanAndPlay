@@ -29,8 +29,7 @@ fun PlayerSelectionScreen(
     viewModel: ContentViewModel // ✅ Add this
 ) {
     val registry = PlayerRegistry.instance
-    val manager = remember { BracketsManager() }
-
+    val manager = viewModel.bracketsManager // ✅ correct
     var selectedPlayers by remember { mutableStateOf<List<Participant>>(emptyList()) }
     var newPlayerName by remember { mutableStateOf("") }
     var showBracket by remember { mutableStateOf(false) }
@@ -97,10 +96,10 @@ fun PlayerSelectionScreen(
                     val ordered = selectedPlayers.take(playerLimit)
                     if (playerLimit == 8) {
                         manager.create8PlayerDoubleElimination("Tournament", ordered)
-                    } else if (playerLimit == 16) {
+                    } else {
                         manager.create16PlayerDoubleElimination("Tournament", ordered)
                     }
-                    showBracket = true
+                    navController.navigate("bracket") // ✅ true navigation
                 },
                 enabled = selectedPlayers.size == playerLimit
             ) {

@@ -3,12 +3,15 @@ package com.example.scanandplay.viewmodel
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
+import com.example.scanandplay.logic.BracketsManager
 import com.example.scanandplay.model.LeaderboardEntry
 import com.example.scanandplay.model.PlayerCountWrapper
 import com.example.scanandplay.navigation.Routes
 import com.example.scanandplay.repository.LeaderboardManager
 
 class ContentViewModel : ViewModel() {
+
+    val bracketsManager: BracketsManager = BracketsManager()
 
     enum class AdminAction {
         ResetPoints, Export, Clear

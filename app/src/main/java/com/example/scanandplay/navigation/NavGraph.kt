@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.scanandplay.ui.screens.*
 import com.example.scanandplay.viewmodel.ContentViewModel
 import com.example.scanandplay.navigation.Routes
+import com.example.scanandplay.repository.LeaderboardManager
 
 @Composable
 fun NavGraph(
@@ -24,6 +25,17 @@ fun NavGraph(
                 playerLimit = count,
                 navController = navController,
                 viewModel = viewModel
+            )
+        }
+
+        composable("bracket") {
+            BracketScreen(
+                manager = viewModel.bracketsManager,
+                leaderboard = LeaderboardManager.instance,
+                viewModel = viewModel,
+                onClose = {
+                    // maybe popBackStack
+                }
             )
         }
 

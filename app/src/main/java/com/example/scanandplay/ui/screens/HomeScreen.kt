@@ -19,10 +19,11 @@ import com.example.scanandplay.repository.PlayerRegistry
 import com.example.scanandplay.ui.components.MatchView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.runtime.saveable.rememberSaveable
 import com.example.scanandplay.model.LeaderboardEntry
 import com.example.scanandplay.viewmodel.ContentViewModel
 
-
+import androidx.lifecycle.ViewModel
 @Composable
 fun HomeScreen(
     playerLimit: Int,
@@ -31,11 +32,10 @@ fun HomeScreen(
     viewModel: ContentViewModel // 👈 add this if missing
 ) {
     val registry = remember { PlayerRegistry.instance }
-    val manager = remember { BracketsManager() }
-
+    val manager: BracketsManager = androidx.lifecycle.viewmodel.compose.viewModel()
     var selectedPlayers by remember { mutableStateOf<List<Participant>>(emptyList()) }
     var newPlayerName by remember { mutableStateOf("") }
-    var showBracket by remember { mutableStateOf(false) }
+    var showBracket by rememberSaveable { mutableStateOf(false) } // ✅ fix here!
 
     if (showBracket) {
         BracketScreen(

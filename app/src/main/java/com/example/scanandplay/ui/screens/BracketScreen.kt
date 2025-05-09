@@ -1,5 +1,6 @@
 package com.example.scanandplay.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.scanandplay.logic.BracketsManager
 import com.example.scanandplay.model.Match
@@ -38,8 +40,10 @@ fun BracketScreen(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
-            Column {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.fillMaxHeight()
+            ) {
                 Text("🏆 Winner Bracket", style = MaterialTheme.typography.titleSmall)
                 BracketRounds(
                     matches = manager.stage?.matches?.filter { it.bracket == "W" } ?: emptyList()
@@ -51,7 +55,20 @@ fun BracketScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("💀 Loser Bracket", style = MaterialTheme.typography.titleSmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = com.example.scanandplay.R.drawable.melo),
+                        contentDescription = "Logo",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(end = 4.dp)
+                    )
+                    Text(
+                        text = "Andra chansen",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+
                 BracketRounds(
                     matches = manager.stage?.matches?.filter { it.bracket == "L" } ?: emptyList()
                 ) { match, winner ->
@@ -59,20 +76,23 @@ fun BracketScreen(
                     selectedWinner = winner
                     confirmPopupVisible = true
                 }
-            }
 
-            manager.stage?.matches?.firstOrNull { it.bracket == "G" }?.let { grandFinal ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("👑 Grand Final", style = MaterialTheme.typography.titleMedium)
-                    MatchView(match = grandFinal, onSelectWinner = {
-                        selectedMatch = grandFinal
-                        selectedWinner = it
-                        confirmPopupVisible = true
-                    })
+                Spacer(modifier = Modifier.height(24.dp))
+
+                manager.stage?.matches?.firstOrNull { it.bracket == "G" }?.let { grandFinal ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("👑 Grand Final", style = MaterialTheme.typography.titleMedium)
+                        MatchView(match = grandFinal, onSelectWinner = {
+                            selectedMatch = grandFinal
+                            selectedWinner = it
+                            confirmPopupVisible = true
+                        })
+                    }
                 }
             }
         }
     }
+
 
     if (showWinnerPopup && tournamentWinner != null) {
         WinnerPopup(
@@ -110,9 +130,9 @@ private fun BracketRounds(
 ) {
     val grouped = matches.groupBy { it.round }.toSortedMap()
 
-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         grouped.forEach { (round, roundMatches) ->
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("R$round", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                 roundMatches.forEach { match ->
                     MatchView(
